@@ -3,12 +3,12 @@ import { ActorProvider, createActorContext, createUseActorHook } from "ic-use-ac
 import { idlFactory as siweProviderIdlFactory } from "../../../ic_siwe_provider/declarations";
 import { idlFactory as driftTokenIdlFactory } from "../../declarations/drift_token";
 import { idlFactory as ak69TokenIdlFactory } from "../../declarations/ak69_token";
-import { idlFactory as miningIdlFactory } from "../../declarations/mining";
+import * as miningIdl from "../../declarations/mining/mining.did.js";
 import canisterIds from "./canister_ids.json";
 
 import { ReactNode } from "react";
 import { useSiwe } from "ic-siwe-js/react";
-import type { _SERVICE as SiweProviderService } from "../../../ic_siwe_provider/declarations";
+import type { _SERVICE as SiweProviderService } from "../../../ic_siwe_provider/declarations/ic_siwe_provider.did.d";
 import type { _SERVICE as TokenService } from "../../declarations/drift_token";
 import type { _SERVICE as MiningService } from "../../declarations/mining";
 
@@ -78,7 +78,7 @@ export default function ActorProviders({ children }: { children: ReactNode }) {
               canisterId={mining_canister_id}
               context={miningContext}
               identity={identity}
-              idlFactory={miningIdlFactory}
+              idlFactory={miningIdl.idlFactory}
               httpAgentOptions={{ host }}
             >
               {children}

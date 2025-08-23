@@ -104,7 +104,7 @@ export interface _SERVICE {
       { 'Err' : TransferFromError }
   >,
 }
-export const idlFactory = ({ IDL }) => {
+export const idlFactory = ({ IDL }: { IDL: any }) => {
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({
     'owner' : IDL.Principal,
@@ -232,4 +232,4 @@ export const idlFactory = ({ IDL }) => {
       ),
   });
 };
-export const init = ({ IDL }) => { return []; };
+export const init = () => { return []; };

@@ -28,7 +28,8 @@ export function useStablePrincipal() {
       try {
         const response = await siweProviderActor.get_principal(address);
         if ("Ok" in response) {
-          const principal = Principal.fromUint8Array(response.Ok);
+          const bytes = new Uint8Array(response.Ok as unknown as ArrayBufferLike);
+          const principal = Principal.fromUint8Array(bytes);
           setStablePrincipal(principal);
         } else {
           throw new Error(response.Err);

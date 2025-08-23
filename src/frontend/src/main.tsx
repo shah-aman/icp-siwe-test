@@ -12,7 +12,6 @@ import { Toaster } from "react-hot-toast";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig } from "./wagmi/wagmi.config.ts";
 import canisterIds from "./ic/canister_ids.json";
-import { HttpAgent } from "@dfinity/agent";
 
 const queryClient = new QueryClient();
 
@@ -24,15 +23,11 @@ const isMainnet = network === "mainnet";
 const siweProviderCanisterId = canisterIds.ic_siwe_provider[network];
 const host = isMainnet ? "https://icp-api.io" : "http://127.0.0.1:4943";
 
-const agent = new HttpAgent({
-  host: "http://127.0.0.1:5173", // URL of the Vite dev server
-});
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <SiweIdentityProvider agent={agent}>
+        <SiweIdentityProvider canisterId={siweProviderCanisterId} httpAgentOptions={{ host }}>
           <ActorProviders>
             <AuthGuard>
               <App />
