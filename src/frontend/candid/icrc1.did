@@ -1,0 +1,95 @@
+// Generic ICRC-1 and ICRC-2 Token Interface
+type Subaccount = blob;
+type Account = record { owner : principal; subaccount : opt Subaccount };
+type Tokens = nat;
+type TxIndex = nat;
+type Timestamp = nat64;
+type Memo = blob;
+type Duration = nat64;
+
+type TransferError = variant {
+    BadBurn : record { min_burn_amount : Tokens };
+    BadFee : record { expected_fee : Tokens };
+    InsufficientFunds : record { balance : Tokens };
+    TooOld;
+    CreatedInFuture : record { ledger_time : Timestamp };
+    Duplicate : record { duplicate_of : TxIndex };
+    TemporarilyUnavailable;
+    GenericError : record { error_code : nat; message : text };
+};
+
+type ApproveError = variant {
+    BadFee : record { expected_fee : Tokens };
+    InsufficientFunds : record { balance : Tokens };
+    AllowanceChanged: record { current_allowance: Tokens };
+    Expired: record { ledger_time: Timestamp };
+    TooOld;
+    CreatedInFuture : record { ledger_time : Timestamp };
+    Duplicate : record { duplicate_of : TxIndex };
+    TemporarilyUnavailable;
+    GenericError : record { error_code : nat; message : text };
+};
+
+type TransferFromError = variant {
+    BadFee : record { expected_fee : Tokens };
+    InsufficientFunds : record { balance : Tokens };
+    InsufficientAllowance : record { allowance: Tokens };
+    TooOld;
+    CreatedInFuture : record { ledger_time : Timestamp };
+    Duplicate : record { duplicate_of : TxIndex };
+    TemporarilyUnavailable;
+    GenericError : record { error_code : nat; message : text };
+};
+
+type Allowance = record {
+    allowance : Tokens;
+    expires_at : opt Timestamp;
+};
+
+type Value = variant {
+    Nat : nat;
+    Text : text;
+    Blob: blob;
+};
+
+service : {
+    // ICRC-1
+    "icrc1_balance_of" : (Account) -> (Tokens) query;
+    "icrc1_decimals" : () -> (nat8) query;
+    "icrc1_fee" : () -> (Tokens) query;
+    "icrc1_metadata" : () -> (vec record { text; Value }) query;
+    "icrc1_name" : () -> (text) query;
+    "icrc1_symbol" : () -> (text) query;
+    "icrc1_supported_standards" : () -> (vec record { name : text; url : text }) query;
+    "icrc1_total_supply" : () -> (Tokens) query;
+    "icrc1_transfer" : (record {
+        to : Account;
+        fee : opt Tokens;
+        memo : opt Memo;
+        from_subaccount : opt Subaccount;
+        created_at_time : opt Timestamp;
+        amount : Tokens;
+    }) -> (variant { Ok : TxIndex; Err : TransferError });
+
+    // ICRC-2
+    "icrc2_allowance": (record { account: Account; spender: Account }) -> (Allowance) query;
+    "icrc2_approve": (record {
+        fee: opt Tokens;
+        memo: opt Memo;
+        from_subaccount: opt Subaccount;
+        created_at_time: opt Timestamp;
+        amount: Tokens;
+        expected_allowance: opt Tokens;
+        expires_at: opt Timestamp;
+        spender: Account;
+    }) -> (variant { Ok: TxIndex; Err: ApproveError });
+    "icrc2_transfer_from": (record {
+        to: Account;
+        fee: opt Tokens;
+        spender_subaccount: opt Subaccount;
+        from: Account;
+        memo: opt Memo;
+        created_at_time: opt Timestamp;
+        amount: Tokens;
+    }) -> (variant { Ok: TxIndex; Err: TransferFromError });
+}

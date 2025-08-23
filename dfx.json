@@ -6,7 +6,8 @@
         "output": "src/ic_siwe_provider/declarations"
       },
       "type": "custom",
-      "wasm": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.wasm.gz"
+      "wasm": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.wasm.gz",
+      "args": "(record { uri = \\"http://localhost:5173\\"; domain = \\"localhost\\"; salt = \\"a-random-salt\\"; chain_id = 1; targets = opt vec { \\"2eo3v-fqaaa-aaaaj-qnruq-cai\\"; \\"br5f7-7uaaa-aaaaa-qaaca-cai\\"; \\"bd3sg-teaaa-aaaaa-qaaba-cai\\" } })"
     },
     "backend": {
       "candid": "src/backend/backend.did",
