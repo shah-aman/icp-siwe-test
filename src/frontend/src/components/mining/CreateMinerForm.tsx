@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMiningActor } from "../../ic/actor_providers";
 import toast from "react-hot-toast";
 import { useSiwe } from "ic-siwe-js/react";
-import { MinerCreationArgs } from "../../../declarations/mining.did";
+import { MinerCreationArgs } from "../../../declarations/mining/mining.did";
 
 export default function CreateMinerForm() {
   const { identity } = useSiwe();
@@ -42,11 +42,10 @@ export default function CreateMinerForm() {
         toast.success(`Miner created successfully! Miner ID: ${result.ok}`, {
           id: toastId,
         });
-        setName(""); // Reset form
+        setName("");
       } else {
-        const errorMsg = Object.keys(result.err)[0];
-        const errorInfo = result.err[errorMsg];
-        throw new Error(`Failed to create miner: ${errorMsg} - ${JSON.stringify(errorInfo)}`);
+        const [errorKey, errorVal] = Object.entries(result.err)[0] as [string, unknown];
+        throw new Error(`Failed to create miner: ${errorKey} - ${JSON.stringify(errorVal)}`);
       }
     } catch (e: any) {
       toast.error(e.message, { id: toastId });
