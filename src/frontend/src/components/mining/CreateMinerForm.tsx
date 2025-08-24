@@ -36,7 +36,7 @@ export default function CreateMinerForm() {
         dailyDirtRate: BigInt(dailyDirtRate),
       };
 
-      const result = await miningActor.createMinerFromDeposit(args);
+      const result = await miningActor.createMiner(args);
 
       if ("ok" in result) {
         toast.success(`Miner created successfully! Miner ID: ${result.ok}`, {

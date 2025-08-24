@@ -15,13 +15,9 @@ import canisterIds from "./ic/canister_ids.json";
 
 const queryClient = new QueryClient();
 
-// Use the environment variable provided by Vite to determine the network
-const networkEnv = process.env.DFX_NETWORK || "local";
-const network = networkEnv === "ic" ? "mainnet" : "local";
-const isMainnet = network === "mainnet";
-
+const network = "mainnet";
 const siweProviderCanisterId = canisterIds.ic_siwe_provider[network];
-const host = isMainnet ? "https://icp-api.io" : "http://127.0.0.1:4943";
+const host = "https://icp-api.io";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

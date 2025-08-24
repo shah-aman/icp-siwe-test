@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { useAk69TokenActor, useDriftTokenActor } from "../ic/actor_providers";
+import {
+  useAk69TokenActor,
+  useDriftTokenActor,
+} from "../ic/actor_providers";
 import { useStablePrincipal } from "../hooks/useStablePrincipal";
 import { useSiwe } from "ic-siwe-js/react";
 

@@ -12,10 +12,8 @@ import type { _SERVICE as SiweProviderService } from "../../../ic_siwe_provider/
 import type { _SERVICE as TokenService } from "../../declarations/drift_token";
 import type { _SERVICE as MiningService } from "../../declarations/mining";
 
-const networkEnv = process.env.DFX_NETWORK || "local";
-const network = networkEnv === "ic" ? "mainnet" : "local";
-const isMainnet = network === "mainnet";
-const host = isMainnet ? "https://icp-api.io" : "/";
+const network = "mainnet";
+const host = "https://icp-api.io";
 
 // --- 1. Create Actor Contexts ---
 // Each actor needs its own React Context.

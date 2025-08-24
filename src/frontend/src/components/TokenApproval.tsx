@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { useDriftTokenActor } from "../ic/actor_providers";
+import { useEffect, useState } from "react";
+import { useMiningActor } from "../ic/actor_providers";
+import { createIcrc2ApproveActor } from "../ic/icrc2_approve_actor";
 import { useStablePrincipal } from "../hooks/useStablePrincipal";
 import canisterIds from "../ic/canister_ids.json";
 import { Principal } from "@dfinity/principal";
 import toast from "react-hot-toast";
+import { useSiwe } from "ic-siwe-js/react";
 
 // Helper to convert a token amount to its lowest denomination (e.g., 1.5 -> 1500000000)
 const toSubunits = (amount: number, decimals: number) => {
@@ -11,24 +13,42 @@ const toSubunits = (amount: number, decimals: number) => {
 };
 
 export default function TokenApproval() {
-  // Use our production-style hooks to get the actor and stable principal
-  const { actor: driftTokenActor } = useDriftTokenActor();
+  // Actors and identity
+  const { actor: miningActor } = useMiningActor();
   const { stablePrincipal } = useStablePrincipal();
+  const { identity } = useSiwe();
 
   // Local state for the form and UI feedback
   const [amount, setAmount] = useState("1.0");
   const [isApproving, setIsApproving] = useState(false);
 
   // Get the mining canister ID from our central config file
-  const network = process.env.DFX_NETWORK === "ic" ? "mainnet" : "local";
+  const network = "mainnet";
   const miningCanisterIdString = canisterIds.mining[network];
   const isPlaceholderCanister = miningCanisterIdString === "aaaaa-aa";
   const miningCanisterId = Principal.fromText(miningCanisterIdString);
 
+  // Resolve the authoritative DIRT ledger canister id from the mining canister
+  const [dirtLedgerId, setDirtLedgerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        if (!miningActor) return;
+        const principal = await miningActor.getDirtToken();
+        setDirtLedgerId(principal.toText());
+      } catch (e) {
+        console.error("Failed to resolve DIRT ledger id", e);
+        setDirtLedgerId(null);
+      }
+    };
+    run();
+  }, [miningActor]);
+
   const handleApproval = async () => {
     // 1. Pre-flight checks: Ensure all necessary actors and principals are available.
-    if (!driftTokenActor || !stablePrincipal) {
-      toast.error("Cannot approve: Actor or user principal not available.");
+    if (!stablePrincipal || !identity) {
+      toast.error("Cannot approve: Identity or user principal not available.");
       return;
     }
 
@@ -63,21 +83,24 @@ export default function TokenApproval() {
         created_at_time: [] as [],
       };
 
-      // 3. Call the 'icrc2_approve' method on the token canister actor.
-      // The actor is already authenticated with the user's temporary SESSION principal.
-      // The token ledger will see the call coming from the session principal and will
-      // correctly set the allowance for the user's STABLE principal.
-      const result = await driftTokenActor.icrc2_approve(args);
+      // 3. Use the resolved DIRT ledger id if available, otherwise fall back
+      const ledgerId = dirtLedgerId ?? canisterIds.drift_token[network];
+      if (!ledgerId) {
+        throw new Error("DIRT ledger id unavailable");
+      }
+      const tolerantActor: any = createIcrc2ApproveActor(ledgerId, identity);
+      const result = await tolerantActor.icrc2_approve(args);
 
       // 4. Handle the result
-      if ("Ok" in result) {
+      if ("Ok" in result || "ok" in result) {
         toast.success(`Successfully approved spending of ${amount} DRIFT.`, {
           id: toastId,
         });
         setAmount("1.0"); // Reset form
       } else {
         // The error object contains detailed information about the failure.
-        const errorMsg = Object.keys(result.Err)[0];
+        const errObj = (result as any).Err ?? (result as any).err;
+        const errorMsg = errObj ? JSON.stringify(errObj) : "Unknown error";
         throw new Error(
           `Approval failed: ${errorMsg}`
         );
