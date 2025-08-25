@@ -3,7 +3,7 @@ import TokenManager from "./components/TokenManager";
 import GitHubIcon from "./components/GitHubIcon";
 import TokenApproval from "./components/TokenApproval";
 import CreateMinerForm from "./components/mining/CreateMinerForm";
-import UserMiningDashboard from "./components/mining/UserMiningDashboard";
+
 import { Toaster } from "react-hot-toast";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
           <TokenApproval />
           <TokenManager />
           <CreateMinerForm />
-          <UserMiningDashboard />
+         
         </div>
         <Toaster />
       </main>

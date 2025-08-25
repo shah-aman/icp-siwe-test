@@ -3,8 +3,6 @@ import { useMiningActor } from "../../ic/actor_providers";
 import toast from "react-hot-toast";
 import { useSiwe } from "ic-siwe-js/react";
 import { MinerCreationArgs } from "../../../declarations/mining/mining.did";
-import canisterIds from "../../ic/canister_ids.json";
-import { createMiningPatchedActor } from "../../ic/mining_patched_actor";
 
 export default function CreateMinerForm() {
   const { identity } = useSiwe();
@@ -17,8 +15,8 @@ export default function CreateMinerForm() {
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateMiner = async () => {
-    if (!identity) {
-      toast.error("Identity not available.");
+    if (!miningActor || !identity) {
+      toast.error("Actor or identity not available.");
       return;
     }
 
@@ -31,10 +29,6 @@ export default function CreateMinerForm() {
     const toastId = toast.loading("Creating miner...");
 
     try {
-      // Use patched actor for createMiner
-      const miningCanisterId = canisterIds.mining["mainnet"];
-      const patchedActor: any = createMiningPatchedActor(miningCanisterId, identity);
-
       const args: MinerCreationArgs = {
         name: name.trim(),
         miningPower: BigInt(miningPower),
@@ -42,17 +36,15 @@ export default function CreateMinerForm() {
         dailyDirtRate: BigInt(dailyDirtRate),
       };
 
-      const result = await patchedActor.createMiner(args);
+      const result = await miningActor.createMiner(args);
 
-      if ("ok" in result || "Ok" in result) {
-        const minerId = result.ok || result.Ok;
-        toast.success(`Miner created successfully! Miner ID: ${minerId}`, {
+      if ("ok" in result) {
+        toast.success(`Miner created successfully! Miner ID: ${result.ok}`, {
           id: toastId,
         });
         setName("");
       } else {
-        const err = result.err || result.Err;
-        const [errorKey, errorVal] = Object.entries(err)[0] as [string, unknown];
+        const [errorKey, errorVal] = Object.entries(result.err)[0] as [string, unknown];
         throw new Error(`Failed to create miner: ${errorKey} - ${JSON.stringify(errorVal)}`);
       }
     } catch (e: any) {
