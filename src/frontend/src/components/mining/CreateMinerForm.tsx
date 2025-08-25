@@ -4,6 +4,23 @@ import toast from "react-hot-toast";
 import { useSiwe } from "ic-siwe-js/react";
 import { MinerCreationArgs } from "../../../declarations/mining/mining.did";
 
+// Helper function to safely stringify values that might contain BigInt
+const safeStringify = (value: unknown): string => {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  if (typeof value === 'object' && value !== null) {
+    try {
+      return JSON.stringify(value, (key, val) => 
+        typeof val === 'bigint' ? val.toString() : val
+      );
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
+};
+
 export default function CreateMinerForm() {
   const { identity } = useSiwe();
   const { actor: miningActor } = useMiningActor();
@@ -45,7 +62,7 @@ export default function CreateMinerForm() {
         setName("");
       } else {
         const [errorKey, errorVal] = Object.entries(result.err)[0] as [string, unknown];
-        throw new Error(`Failed to create miner: ${errorKey} - ${JSON.stringify(errorVal)}`);
+        throw new Error(`Failed to create miner: ${errorKey} - ${safeStringify(errorVal)}`);
       }
     } catch (e: any) {
       toast.error(e.message, { id: toastId });
